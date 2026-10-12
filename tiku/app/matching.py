@@ -3,7 +3,14 @@
 """
 
 import re
+import unicodedata
 from typing import List, Optional
+
+
+def question_match_key(text: str) -> str:
+    """精确匹配用键：统一全半角、空白和句末标点，保留题干内容。"""
+    text = unicodedata.normalize('NFKC', text)
+    return re.sub(r'\s+', '', text).rstrip('.。?!')
 
 
 def normalize_question(text: str) -> str:

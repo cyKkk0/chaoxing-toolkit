@@ -33,5 +33,5 @@ if __name__ == "__main__":
         workers=workers,
         loop="auto",
         http="auto",
-        access_log=False
+        access_log=True
     )

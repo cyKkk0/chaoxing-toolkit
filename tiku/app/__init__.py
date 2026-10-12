@@ -4,6 +4,7 @@
 
 import os
 import logging
+import mimetypes
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -32,36 +33,24 @@ async def lifespan(app: FastAPI):
     """应用生命周期管理"""
     global db
     db = AsyncDatabase(DATABASE_FILE)
-    await db.init_db()
-
-    count = await db.get_count()
-    if count == 0:
-        await db.import_from_json(JSON_FILE)
-
-    # 将 db 注入到 app.state 以便路由访问
-    app.state.db = db
-
-    print(f"题库服务器已启动，共 {count} 道题目")
-    print(f"并发限制: {MAX_CONCURRENT_REQUESTS}")
-    print(f"限流配置: {RATE_LIMIT_REQUESTS} 请求/{RATE_LIMIT_WINDOW}秒")
-    print(f"请求超时: {REQUEST_TIMEOUT}秒")
-
-    yield
-
-    print("正在关闭服务器...")
+    database = db
     try:
-        if db:
-            async with db._pool_lock:
-                for conn in db._connection_pool:
-                    try:
-                        await conn.close()
-                    except Exception as e:
-                        logger.error(f"关闭数据库连接失败: {e}")
-                db._connection_pool.clear()
-        print("资源清理完成")
-    except Exception as e:
-        logger.error(f"资源清理失败: {e}")
-    print("题库服务器已关闭")
+        await database.init_db()
+        count = await database.get_count()
+        if count == 0:
+            await database.import_from_json(JSON_FILE)
+            count = await database.get_count()
+
+        app.state.db = database
+        print(f"题库服务器已启动，共 {count} 道题目")
+        print(f"并发限制: {MAX_CONCURRENT_REQUESTS}")
+        print(f"限流配置: {RATE_LIMIT_REQUESTS} 请求/{RATE_LIMIT_WINDOW}秒")
+        print(f"请求超时: {REQUEST_TIMEOUT}秒")
+        yield
+    finally:
+        print("正在关闭服务器...")
+        await database.close()
+        print("题库服务器已关闭")
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -84,6 +73,10 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 def create_app() -> FastAPI:
     """创建 FastAPI 应用实例"""
+    # Windows registry MIME mappings can identify .js as text/plain.
+    # Browsers require a JavaScript MIME type for ES modules.
+    mimetypes.add_type("text/javascript", ".js")
+    mimetypes.add_type("text/javascript", ".mjs")
     app = FastAPI(
         title="司索工题库服务器",
         description="支持题目查询API和Web管理界面 - 高性能并发版本",

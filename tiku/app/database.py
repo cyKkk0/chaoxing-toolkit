@@ -15,9 +15,23 @@ from .config import (
     MAX_SEARCH_LENGTH, MAX_LIMIT, MAX_OFFSET
 )
 from .schemas import QuestionCreate, QuestionUpdate
-from .matching import normalize_question, text_similarity, options_match_score, combined_score
+from .matching import question_match_key, normalize_question, text_similarity, options_match_score, combined_score
 
 logger = logging.getLogger(__name__)
+
+
+async def _finish_cleanup(task):
+    """Finish cleanup even if the caller is cancelled, then propagate cancellation."""
+    cancelled = False
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            cancelled = True
+    result = task.result()
+    if cancelled:
+        raise asyncio.CancelledError
+    return result
 
 
 class AsyncDatabase:
@@ -34,26 +48,70 @@ class AsyncDatabase:
         self._pool_lock = asyncio.Lock()
         self._pool_size = 10
         self._initialized = False
+        self._connections = set()
+        self._closing_connections = set()
+        self._closed = False
+        self._close_task = None
 
     async def _get_connection(self) -> aiosqlite.Connection:
         async with self._pool_lock:
+            if self._closed:
+                raise RuntimeError("Database is closed")
             if self._connection_pool:
                 return self._connection_pool.pop()
             conn = await aiosqlite.connect(self.db_file, timeout=30.0)
-            conn.row_factory = aiosqlite.Row
-            await conn.execute("PRAGMA journal_mode=WAL")
-            await conn.execute("PRAGMA synchronous=NORMAL")
-            await conn.execute("PRAGMA cache_size=10000")
-            await conn.execute("PRAGMA temp_store=MEMORY")
-            await conn.execute("PRAGMA busy_timeout=30000")
+            try:
+                conn.row_factory = aiosqlite.Row
+                await conn.create_function("question_match_key", 1, question_match_key, deterministic=True)
+                await conn.execute("PRAGMA journal_mode=WAL")
+                await conn.execute("PRAGMA synchronous=NORMAL")
+                await conn.execute("PRAGMA cache_size=10000")
+                await conn.execute("PRAGMA temp_store=MEMORY")
+                await conn.execute("PRAGMA busy_timeout=30000")
+            except BaseException:
+                await _finish_cleanup(asyncio.create_task(conn.close()))
+                raise
+            self._connections.add(conn)
             return conn
 
     async def _release_connection(self, conn: aiosqlite.Connection):
         async with self._pool_lock:
+            # Shutdown also closes checked-out connections; late returns do nothing.
+            if self._closed:
+                return
             if len(self._connection_pool) < self._pool_size:
                 self._connection_pool.append(conn)
-            else:
-                await conn.close()
+                return
+            self._connections.discard(conn)
+            task = asyncio.create_task(conn.close())
+            self._closing_connections.add(task)
+        try:
+            await _finish_cleanup(task)
+        finally:
+            self._closing_connections.discard(task)
+
+    async def close(self):
+        """Close all workers, including borrowed connections, once and without leaks."""
+        if self._close_task is None:
+            self._close_task = asyncio.create_task(self._close_all())
+        await _finish_cleanup(self._close_task)
+
+    async def _close_all(self):
+        async with self._pool_lock:
+            self._closed = True
+            connections = list(self._connections)
+            closing = list(self._closing_connections)
+            self._connections.clear()
+            self._connection_pool.clear()
+        # Never hold the pool lock while waiting for database workers to exit.
+        results = await asyncio.gather(
+            *(conn.close() for conn in connections), *closing,
+            return_exceptions=True,
+        )
+        for result in results:
+            if isinstance(result, BaseException):
+                logger.error("关闭数据库连接失败: %r", result)
+        self._initialized = False
 
     async def init_db(self):
         async with self._lock:
@@ -310,6 +368,21 @@ class AsyncDatabase:
                         rows = await cursor.fetchall()
                         for r in rows:
                             candidates.append((0.7, self._row_to_dict(r)))
+
+                # 标准化精确匹配必须覆盖全库，避免模糊候选 LIMIT 500 漏掉后面的题目。
+                if not candidates:
+                    match_key = question_match_key(clean_input)
+                    if match_key:
+                        cursor = await conn.execute(
+                            'SELECT * FROM questions WHERE question_match_key(question) = ? ORDER BY id',
+                            (match_key,)
+                        )
+                        rows = await cursor.fetchall()
+                        typed_rows = [r for r in rows if r['type'] == question_type]
+                        for r in typed_rows or rows:
+                            candidates.append((1.0, self._row_to_dict(r)))
+                        if candidates:
+                            logger.info("题目匹配 | 方式=标准化精确匹配 | 候选数=%s | 题目=%r", len(candidates), question_text)
 
                 # 阶段7：标准化模糊匹配
                 if not candidates:

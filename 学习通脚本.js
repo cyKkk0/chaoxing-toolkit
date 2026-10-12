@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         💯【超星学习通满分助手】支持任务点自动跳转|章节测验、作业、考试全网检索答案，简答题支持chatgpt对接|音频、视频全自动静音播放|可视化参数配置
 // @namespace    askAuto
-// @version      2.1.6
+// @version      2.1.8
 // @author       shushoujiu
 // @description  💯超星学习通满分助手，挂机解放时间，无需任何操作自动完成所有任务点。汇集全网免费、付费题库接口支持一键对接，答案更全更靠谱。
 // @icon         https://vitejs.dev/logo.svg
@@ -25,6 +25,9 @@
 // @connect      api.muketool.com
 // @connect      api.tikuhai.com
 // @connect      api.deepseek.com
+// @connect      localhost
+// @connect      127.0.0.1
+// @connect      10.29.47.176
 // @grant        GM_addStyle
 // @grant        GM_getResourceText
 // @grant        GM_getValue
@@ -66,7 +69,7 @@
       _GM_setValue("config", config);
     }
     return config;
-  }, defaultConfig$1 = { debugger: false, autoAnswer: true, autoVideo: true, autoJump: true, autoSubmit: true, thtoken: "", yztoken: "", gptKey: "", gptModel: "gpt-3.5-turbo", gpt: false, gptType: ["0", "1", "2", "3", "4", "5", "6", "7"], interval: 3, answerIntervalMin: 8, answerIntervalMax: 30, submitDelayMin: 20, submitDelayMax: 40, minAccuracy: 0.8, autoExam: true, hideExam: false, notice: "本脚本仅供学习交流使用，严禁用于商业用途，否则后果自负！", deepseekKey: "", deepseekEnabled: false, deepseekModel: "deepseek-reasoner", customApiUrl: "", customApiKey: "", customApiEnabled: false, aiEnabled: false, aiApiKey: "", aiApiUrl: "https://api.deepseek.com/v1/chat/completions", aiModel: "deepseek-reasoner" }, userConfig = [{ name: "base", label: "基础配置", config: [{ name: "interval", label: "通用间隔(秒)", type: "number", value: defaultConfig$1.interval, desc: "通用间隔，用于脚本运行切换" }, { name: "answerIntervalMin", label: "答题间隔最小值(秒)", type: "number", value: defaultConfig$1.answerIntervalMin, desc: "每道题之间的最小等待时间" }, { name: "answerIntervalMax", label: "答题间隔最大值(秒)", type: "number", value: defaultConfig$1.answerIntervalMax, desc: "每道题之间的最大等待时间" }, { name: "submitDelayMin", label: "提交前延迟最小值(秒)", type: "number", value: defaultConfig$1.submitDelayMin, desc: "全部答完题后提交前的最小等待时间" }, { name: "submitDelayMax", label: "提交前延迟最大值(秒)", type: "number", value: defaultConfig$1.submitDelayMax, desc: "全部答完题后提交前的最大等待时间" }, { name: "customApiEnabled", label: "启用自定义题库", type: "switch", value: defaultConfig$1.customApiEnabled, desc: "开启后，会优先使用自定义题库接口查询答案" }, { name: "customApiUrl", label: "自定义题库地址", type: "input", value: defaultConfig$1.customApiUrl, desc: "你的题库服务器API地址，例如：http://localhost:8080/api/query" }, { name: "customApiKey", label: "自定义题库密钥", type: "input", value: defaultConfig$1.customApiKey, desc: "你的题库服务器API密钥（如果有的话）" }, { name: "aiEnabled", label: "启用AI自动答题", type: "switch", value: defaultConfig$1.aiEnabled, desc: "开启后，当题库查询失败时会调用AI获取答案" }, { name: "aiApiUrl", label: "AI API地址", type: "input", value: defaultConfig$1.aiApiUrl, desc: "OpenAI兼容的API地址，例如：https://api.deepseek.com/v1/chat/completions" }, { name: "aiModel", label: "AI模型名称", type: "input", value: defaultConfig$1.aiModel, desc: "模型名称，例如：deepseek-reasoner、gpt-4o、claude-3-opus等" }, { name: "aiApiKey", label: "AI API密钥", type: "input", value: defaultConfig$1.aiApiKey, desc: "API密钥，填写完请保存再刷新页面" }] }, { name: "chapter", label: "章节配置", config: [{ name: "autoAnswer", label: "自动答题", type: "switch", value: defaultConfig$1.autoAnswer, desc: "开启后，会自动答题" }, { name: "autoVideo", label: "自动视频", type: "switch", value: defaultConfig$1.autoVideo, desc: "开启后，会自动观看视频" }, { name: "autoJump", label: "自动切换", type: "switch", value: defaultConfig$1.autoVideo, desc: "开启后，会自动切换章节" }, { name: "autoSubmit", label: "自动提交", type: "switch", value: defaultConfig$1.autoSubmit, desc: "开启后，会自动提交答案" }, { name: "minAccuracy", label: "最低正确率", type: "input", value: defaultConfig$1.minAccuracy, desc: "不满足最低正确率则不会自动提交答案" }] }, { name: "exam", label: "作业/考试配置", config: [{ name: "autoExam", label: "考试自动切换", type: "switch", value: defaultConfig$1.autoExam, desc: "开启后，会考试会自动切换" }] }], useformStore = pinia$1.defineStore({ id: "formstore", state: () => ({ forminput: getConfig(), dialogV: false, activeName: "base" }), actions: { saveConfig(forminput) {
+  }, defaultConfig$1 = { debugger: false, autoAnswer: true, autoVideo: true, autoJump: true, autoSubmit: true, thtoken: "", yztoken: "", gptKey: "", gptModel: "gpt-3.5-turbo", gpt: false, gptType: ["0", "1", "2", "3", "4", "5", "6", "7"], interval: 3, answerIntervalMin: 8, answerIntervalMax: 30, submitDelayMin: 20, submitDelayMax: 40, minAccuracy: 0.8, autoExam: true, hideExam: false, notice: "本脚本仅供学习交流使用，严禁用于商业用途，否则后果自负！", deepseekKey: "", deepseekEnabled: false, deepseekModel: "deepseek-reasoner", customApiUrl: "", customApiKey: "", customApiEnabled: false, aiEnabled: false, aiApiKey: "", aiApiUrl: "https://api.deepseek.com/v1/chat/completions", aiModel: "deepseek-reasoner" }, userConfig = [{ name: "base", label: "基础配置", config: [{ name: "interval", label: "通用间隔(秒)", type: "number", value: defaultConfig$1.interval, desc: "通用间隔，用于脚本运行切换" }, { name: "answerIntervalMin", label: "答题间隔最小值(秒)", type: "number", value: defaultConfig$1.answerIntervalMin, desc: "每道题之间的最小等待时间" }, { name: "answerIntervalMax", label: "答题间隔最大值(秒)", type: "number", value: defaultConfig$1.answerIntervalMax, desc: "每道题之间的最大等待时间" }, { name: "submitDelayMin", label: "提交前延迟最小值(秒)", type: "number", value: defaultConfig$1.submitDelayMin, desc: "全部答完题后提交前的最小等待时间" }, { name: "submitDelayMax", label: "提交前延迟最大值(秒)", type: "number", value: defaultConfig$1.submitDelayMax, desc: "全部答完题后提交前的最大等待时间" }, { name: "customApiEnabled", label: "启用自定义题库", type: "switch", value: defaultConfig$1.customApiEnabled, desc: "开启后，会优先使用自定义题库接口查询答案" }, { name: "customApiUrl", label: "自定义题库地址", type: "input", value: defaultConfig$1.customApiUrl, desc: "你的题库服务器API地址，例如：http://localhost:8080/api/query" }, { name: "customApiKey", label: "自定义题库密钥", type: "input", value: defaultConfig$1.customApiKey, desc: "你的题库服务器API密钥（如果有的话）" }, { name: "aiEnabled", label: "启用AI自动答题", type: "switch", value: defaultConfig$1.aiEnabled, desc: "开启后，当题库查询失败时会调用AI获取答案" }, { name: "aiApiUrl", label: "AI API地址", type: "input", value: defaultConfig$1.aiApiUrl, desc: "OpenAI兼容的API地址，例如：https://api.deepseek.com/v1/chat/completions" }, { name: "aiModel", label: "AI模型名称", type: "input", value: defaultConfig$1.aiModel, desc: "模型名称，例如：deepseek-reasoner、gpt-4o、claude-3-opus等" }, { name: "aiApiKey", label: "AI API密钥", type: "input", value: defaultConfig$1.aiApiKey, desc: "API密钥，填写完请保存再刷新页面" }] }, { name: "chapter", label: "章节配置", config: [{ name: "autoAnswer", label: "自动答题", type: "switch", value: defaultConfig$1.autoAnswer, desc: "开启后，会自动答题" }, { name: "autoVideo", label: "自动视频", type: "switch", value: defaultConfig$1.autoVideo, desc: "开启后，会自动观看视频" }, { name: "autoJump", label: "自动切换", type: "switch", value: defaultConfig$1.autoJump, desc: "开启后，自动进入未完成课程、章节，并在任务完成后切换章节" }, { name: "autoSubmit", label: "自动提交", type: "switch", value: defaultConfig$1.autoSubmit, desc: "开启后，会自动提交答案" }, { name: "minAccuracy", label: "最低正确率", type: "input", value: defaultConfig$1.minAccuracy, desc: "不满足最低正确率则不会自动提交答案" }] }, { name: "exam", label: "作业/考试配置", config: [{ name: "autoExam", label: "考试自动切换", type: "switch", value: defaultConfig$1.autoExam, desc: "开启后，会考试会自动切换" }] }], useformStore = pinia$1.defineStore({ id: "formstore", state: () => ({ forminput: getConfig(), dialogV: false, activeName: "base" }), actions: { saveConfig(forminput) {
     _GM_setValue("config", forminput);
   } } });
   var export_helper_default = (sfc, props) => {
@@ -174,7 +177,7 @@
         });
       });
     }
-    async getAnswerFromCustomApi(questionData) {
+    async getAnswerFromCustomApi(questionData, report = console.log) {
       return new Promise((resolve) => {
         const config = getConfig();
         if (!config.customApiEnabled || !config.customApiUrl) {
@@ -189,43 +192,55 @@
           key: config.customApiKey || ""
         };
 
-        console.log("自定义题库请求:", config.customApiUrl);
+        report("本地题库：发送查询请求");
 
-        _GM_xmlhttpRequest({
-          method: "POST",
-          url: config.customApiUrl,
-          data: JSON.stringify(requestData),
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": config.customApiKey ? "Bearer " + config.customApiKey : ""
-          },
-          timeout: 1e4,
-          onload: (res) => {
-            try {
-              console.log("自定义题库返回:", res.responseText);
-              const data = JSON.parse(res.responseText);
-              if (data.code === 1 || data.code === 0 || data.success === true) {
-                resolve({ form: "自定义题库", answer: data.answer || data.data?.answer || "" });
-              } else {
+        try {
+          _GM_xmlhttpRequest({
+            method: "POST",
+            url: config.customApiUrl,
+            data: JSON.stringify(requestData),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": config.customApiKey ? "Bearer " + config.customApiKey : ""
+            },
+            timeout: 1e4,
+            onload: (res) => {
+              try {
+                report(`本地题库：收到响应，HTTP ${res.status}`);
+                if (res.status < 200 || res.status >= 300) {
+                  report(`本地题库：请求失败，HTTP ${res.status}`, "error");
+                  resolve({ form: "自定义题库", answer: "" });
+                  return;
+                }
+                const data = JSON.parse(res.responseText);
+                report(`本地题库：状态码=${data.code}，消息=${data.msg || "无"}`);
+                if (data.code === -1 || data.code === 1 || data.code === 0 || data.success === true) {
+                  resolve({ form: "自定义题库", answer: data.answer || data.data?.answer || "" });
+                } else {
+                  resolve({ form: "自定义题库", answer: "" });
+                }
+              } catch (e) {
+                report("本地题库：响应解析失败", "error");
                 resolve({ form: "自定义题库", answer: "" });
               }
-            } catch (e) {
-              console.error("自定义题库解析错误:", e);
+            },
+            ontimeout: () => {
+              report("本地题库：请求超时（10秒）", "error");
+              resolve({ form: "自定义题库", answer: "" });
+            },
+            onerror: (err) => {
+              report("本地题库：网络请求失败，请检查服务地址和脚本访问权限", "error");
               resolve({ form: "自定义题库", answer: "" });
             }
-          },
-          ontimeout: () => {
-            console.log("自定义题库请求超时");
-            resolve({ form: "自定义题库", answer: "" });
-          },
-          onerror: (err) => {
-            console.error("自定义题库请求错误:", err);
-            resolve({ form: "自定义题库", answer: "" });
-          }
-        });
+          });
+        } catch (error) {
+          report("本地题库：请求未能发出，请检查 Tampermonkey 的 @connect 和访问权限", "error");
+          console.error("本地题库请求启动失败:", error);
+          resolve({ form: "自定义题库", answer: "" });
+        }
       });
     }
-    async getAnswerFromAI(questionData) {
+    async getAnswerFromAI(questionData, report = console.log) {
       return new Promise((resolve) => {
         const config = getConfig();
         if (!config.aiEnabled || !config.aiApiKey) {
@@ -299,6 +314,7 @@
           messages: [{ role: "user", content: prompt }]
         };
         console.log("AI请求发送中...", "模型:", config.aiModel, "题目类型:", questionTypeId === "3" ? "判断题" : questionTypeId === "1" ? "多选题" : "单选题");
+        report(`AI：发送请求，模型=${config.aiModel}`);
         _GM_xmlhttpRequest({
           method: "POST",
           url: config.aiApiUrl,
@@ -310,7 +326,12 @@
           timeout: 3e4,
           onload: (res) => {
             try {
-              console.log("AI返回结果:", res.responseText);
+              report(`AI：收到响应，HTTP ${res.status}`);
+              if (res.status < 200 || res.status >= 300) {
+                report(`AI：请求失败，HTTP ${res.status}`, "error");
+                resolve({ form: "AI", answer: "" });
+                return;
+              }
               const data = JSON.parse(res.responseText);
               if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
                 const content = data.choices[0].message.content.trim();
@@ -379,20 +400,20 @@
                   }
                 }
               } else {
-                console.log("AI返回格式异常:", data);
+                report("AI：响应缺少有效答案内容", "error");
                 resolve({ form: "AI", answer: "" });
               }
             } catch (e) {
-              console.log("AI解析错误:", e);
+              report("AI：响应解析失败", "error");
               resolve({ form: "AI", answer: "" });
             }
           },
           ontimeout: () => {
-            console.log("AI请求超时");
+            report("AI：请求超时（30秒）", "error");
             resolve({ form: "AI", answer: "" });
           },
           onerror: (err) => {
-            console.log("AI请求错误:", err);
+            report("AI：网络请求失败", "error");
             resolve({ form: "AI", answer: "" });
           }
         });
@@ -1636,33 +1657,47 @@
         html = html.replace(regex, String.fromCharCode(text[key]));
       }), fontElement.innerHTML = html, fontElement.classList.remove("font-cxsecret");
     });
+  }, logAnswerStep = (questionData, message, level = "info") => {
+    const text = `[答题] ${questionData.question} | ${message}`;
+    console.log(text);
+    useAskStore().log(text, level);
   }, getAnswers = async (questionData, windowz = _unsafeWindow) => {
     let server = new ServerApi(windowz);
     const config = getConfig();
     const typeNames = { "0": "单选题", "1": "多选题", "2": "填空题", "3": "判断题", "4": "简答题", "5": "名词解释", "6": "论述题", "7": "计算题" };
     const typeName = typeNames[questionData.type] || "单选题";
+    const report = (message, level) => logAnswerStep(questionData, message, level);
+    report(`开始查询，题型=${typeName}，选项数=${questionData.options?.length || 0}`);
 
     // 优先使用自定义题库
     if (config.customApiEnabled && config.customApiUrl) {
-      console.log(`使用自定义题库获取答案... 题型: ${typeName}`);
-      const customResult = await server.getAnswerFromCustomApi(questionData);
+      const customResult = await server.getAnswerFromCustomApi(questionData, report);
       if (customResult.answer && customResult.answer.length > 0) {
+        report(`本地题库：命中，答案=${JSON.stringify(customResult.answer)}；直接使用，跳过AI`, "success");
         return [customResult];
       }
-      console.log("自定义题库未找到答案，尝试其他方式...");
+      report("本地题库：未取得有效答案，进入AI回退判断", "warning");
+    } else {
+      report(config.customApiEnabled ? "本地题库：未配置接口地址，跳过" : "本地题库：未启用，跳过", "warning");
     }
 
     // 使用AI自动答题
     if (config.aiEnabled && config.aiApiKey) {
-      console.log(`使用AI获取答案... 模型: ${config.aiModel}, 题型: ${typeName}`);
-      const aiResult = await server.getAnswerFromAI(questionData);
+      report("AI：回退条件满足，开始查询");
+      const aiResult = await server.getAnswerFromAI(questionData, report);
       if (aiResult.answer && aiResult.answer.length > 0) {
+        report(`AI：解析成功，答案=${JSON.stringify(aiResult.answer)}`, "success");
         return [aiResult];
       }
+      report("AI：未取得可用答案（请求失败或答案未能匹配题型/选项）", "warning");
+    } else {
+      report(config.aiEnabled ? "AI：未配置密钥，跳过" : "AI：未启用，跳过", "warning");
     }
 
+    report("查询结束：无可用答案", "error");
     return [{ form: "AI", answer: "" }];
   }, fillAnswer = (answer, questionData, html, iframeWindow) => {
+    logAnswerStep(questionData, "开始匹配并填写答案");
     answer = answer.filter((item) => item.answer.length > 0), console.log(answer);
     for (let i = 0; i < answer.length; i++) {
       if ("string" == typeof answer[i].answer) {
@@ -1671,19 +1706,25 @@
         answer[i].answer = [answer[i].answer];
       }
       let tmp = setAnswer(answer[i].answer, questionData, html, iframeWindow);
-      if (tmp)
+      if (tmp) {
+        logAnswerStep(questionData, `填写完成，来源=${answer[i].form}，答案=${JSON.stringify(tmp)}`, "success");
         return tmp;
+      }
+      logAnswerStep(questionData, `来源=${answer[i].form}，答案无法匹配或填写`, "warning");
     }
+    logAnswerStep(questionData, "填写结果：未填写有效答案", "warning");
     return false;
   }, setAnswer = (answer, questionData, html, iframeWindow) => {
     switch (questionData.type) {
       case "0":
       case "1":
         const matchArr = matchAnswer(answer, questionData.options);
+        logAnswerStep(questionData, `选项匹配：${JSON.stringify(answer)} → ${matchArr.length ? matchArr.map(index => String.fromCharCode(65 + index) + "." + questionData.options[index]).join("；") : "未完整匹配"}`, matchArr.length ? "info" : "warning");
+        if (!matchArr.length || (questionData.type === "0" && matchArr.length !== 1)) return false;
         matchArr.length > 0 && clearCurrent(html, iframeWindow);
         for (var i = 0; i < matchArr.length; i++)
           console.log($$1(html).find("li").eq(matchArr[i]), matchArr[i]), $$1(html).find("ul:eq(0) li :radio,:checkbox,textarea").eq(matchArr[i]).click(), $$1(html).find(".answerBg").eq(matchArr[i]).click(), $$1(html).find("li").eq(matchArr[i]).click();
-        return matchArr.length > 0 && answer;
+        return questionData.options.filter((option, index) => matchArr.includes(index));
       case "3":
         return clearCurrent(html, iframeWindow), answer instanceof Array && (answer = answer[0]), $$1(html).find("ul:eq(0) li :radio,:checkbox,textarea").each(function() {
           "true" == $$1(this).val() ? answer.match(/(^|,)(True|true|正确|是|对|√|T|ri)(,|$)/) && $$1(this).click() : answer.match(/(^|,)(False|false|错误|否|错|×|F|wr)(,|$)/) && $$1(this).click();
@@ -1707,20 +1748,22 @@
         return false;
     }
   }, matchAnswer = (answer, options) => {
-    answer = ((answer2) => {
-      if (answer2 instanceof Array) {
-        answer2 = answer2.filter(function(item) {
-          return null !== item;
-        });
-        for (let i2 = 0; i2 < answer2.length; i2++)
-          answer2[i2] = removeHtml(answer2[i2]);
-      } else
-        "string" == typeof answer2 && (answer2 = cl(answer2));
-      return answer2;
-    })(answer);
-    for (var matchArr = [], i = 0; i < answer.length; i++)
-      for (var j = 0; j < options.length; j++)
-        answer[i] == options[j] && matchArr.push(j);
+    const normalize = text => removeHtml(text).trim();
+    const normalizedOptions = options.map(normalize);
+    const parts = (Array.isArray(answer) ? answer : [answer])
+      .filter(item => typeof item === "string" && item.trim())
+      .flatMap(item => {
+        const text = normalize(item);
+        // An option may itself contain # (for example C#); preserve complete option matches.
+        return normalizedOptions.includes(text) ? [text] : text.split("#").map(normalize);
+      });
+    const matchArr = [];
+    for (const part of parts) {
+      const index = normalizedOptions.indexOf(part);
+      // Never silently fill only part of a multi-select answer.
+      if (!part || index === -1) return [];
+      if (!matchArr.includes(index)) matchArr.push(index);
+    }
     return matchArr;
   }, clearCurrent = (item, iframeWindow) => {
     $$1(item).find(".answerBg, .textDIV, .eidtDiv").each(function() {
@@ -1803,116 +1846,111 @@
         });
       });
     }
-    async video(iframeWindow) {
-      this.askStore.reset(), this.askStore.task.name = "视频", this.askStore.task.video.status = 1, await waitElementLoaded(iframeWindow, "#video_html5_api"), console.log("视频加载完成");
-      const player = iframeWindow.videojs("video_html5_api"), playerButton = iframeWindow.document.querySelector(".vjs-big-play-button");
-      player.muted(true), player.playbackRate(16), player.play();
-
-      // 生成随机暂停时间（30-93秒）
-      const randomPauseTime = Math.floor(Math.random() * (93 - 30 + 1)) + 30;
-      let pauseTimer = null;
-      let mouseMoveTimer = null;
-
-      // 随机暂停功能
-      const scheduleRandomPause = () => {
-        const delay = Math.floor(Math.random() * (93 - 30 + 1) + 30) * 1000;
-        pauseTimer = setTimeout(() => {
-          if (!player.paused()) {
-            player.pause();
-            console.log(`[视频] 已随机暂停，暂停时间: ${delay / 1000}秒`);
-            // 暂停2-5秒后恢复播放
-            setTimeout(() => {
-              if (player.paused() && "isUnFinishJob" in iframeWindow && iframeWindow.isUnFinishJob()) {
-                player.play();
-                console.log("[视频] 已恢复播放");
-                scheduleRandomPause();
-              }
-            }, Math.floor(Math.random() * (5 - 2 + 1) + 2) * 1000);
-          }
-        }, delay);
-      };
-      scheduleRandomPause();
-
-      // 模拟鼠标滑动功能
-      const simulateMouseMovement = () => {
-        const doc = iframeWindow.document;
-        const videoElement = doc.querySelector("#video_html5_api") || doc.body;
-
-        // 生成随机位置
-        const rect = videoElement.getBoundingClientRect();
-        const x = Math.floor(Math.random() * rect.width) + rect.left;
-        const y = Math.floor(Math.random() * rect.height) + rect.top;
-
-        // 创建并分发鼠标事件
-        const events = ["mousemove", "mouseover", "mouseenter"];
-        events.forEach(eventType => {
-          const event = new MouseEvent(eventType, {
-            bubbles: true,
-            cancelable: true,
-            view: iframeWindow,
-            clientX: x,
-            clientY: y,
-            screenX: x + (iframeWindow.screenX || 0),
-            screenY: y + (iframeWindow.screenY || 0),
-            movementX: Math.floor(Math.random() * 10) - 5,
-            movementY: Math.floor(Math.random() * 10) - 5
+    async video(iframeWindow, isCurrent = () => true) {
+      this.askStore.reset();
+      this.askStore.task.name = "视频";
+      this.askStore.task.video.status = 1;
+      await waitElementLoaded(iframeWindow, "#video_html5_api");
+      if (!isCurrent()) return false;
+      const player = iframeWindow.videojs("video_html5_api");
+      player.muted(true);
+      // Keep playback and the platform's completion reporting in sync.
+      player.playbackRate(1);
+      return new Promise((resolve) => {
+        let finished = false;
+        let playPending = false;
+        let lastPlayAttempt = -Infinity;
+        let reportedPlayError = false;
+        const resumePlayback = () => {
+          if (finished || !isCurrent() || player.ended() || playPending || Date.now() - lastPlayAttempt < 3000) return;
+          if (typeof player.error === "function" && player.error()) return;
+          lastPlayAttempt = Date.now();
+          playPending = true;
+          Promise.resolve().then(() => {
+            if (!finished && isCurrent() && !player.ended()) return player.play();
+          }).then(() => {
+            reportedPlayError = false;
+          }).catch((error) => {
+            if (!finished && isCurrent() && !reportedPlayError) {
+              this.askStore.log(`视频播放被阻止，请手动点击播放：${error.message}`, "error");
+              reportedPlayError = true;
+            }
+          }).finally(() => {
+            playPending = false;
           });
-          videoElement.dispatchEvent(event);
-        });
-
-        // 随机滚动页面
-        if (Math.random() > 0.7) {
-          const scrollAmount = Math.floor(Math.random() * 100) - 50;
-          iframeWindow.scrollBy(0, scrollAmount);
-        }
-      };
-
-      // 每3-8秒模拟一次鼠标活动
-      const scheduleMouseMovement = () => {
-        const delay = Math.floor(Math.random() * (8 - 3 + 1) + 3) * 1000;
-        mouseMoveTimer = setTimeout(() => {
-          simulateMouseMovement();
-          if ("isUnFinishJob" in iframeWindow && iframeWindow.isUnFinishJob()) {
-            scheduleMouseMovement();
+        };
+        const finish = (completed) => {
+          if (finished) return;
+          finished = true;
+          clearInterval(timer);
+          player.off("ended", onEnded);
+          resolve(completed);
+        };
+        const onEnded = () => {
+          if (!isCurrent()) return finish(false);
+          const duration = player.duration();
+          if (Number.isFinite(duration) && duration > 0 && player.currentTime() >= duration - 0.5) {
+            finish(true);
           }
-        }, delay);
-      };
-      scheduleMouseMovement();
-
-      await new Promise((resolve) => {
-        const intervalId = setInterval(() => {
-          "isUnFinishJob" in iframeWindow && iframeWindow.isUnFinishJob() ? player.paused() && (playerButton == null ? void 0 : playerButton.click()) : (clearInterval(intervalId), clearTimeout(pauseTimer), clearTimeout(mouseMoveTimer), resolve());
-        }, 1e3), pauseBase = player.pause;
-        player.pause = function() {
-          player.currentTime() >= player.duration() && (console.log("视频播放完成"), player.pause = pauseBase, clearTimeout(pauseTimer), clearTimeout(mouseMoveTimer), resolve());
-        }, player.on("ended", () => {
-          console.log("视频播放完成1"), player.pause = pauseBase, player.pause(), clearInterval(intervalId), clearTimeout(pauseTimer), clearTimeout(mouseMoveTimer), resolve();
-        });
-      }), console.log("任务点完成");
-    }
-    work(iframeWindow) {
-      return new Promise(async (resolve) => {
-        decode(iframeWindow);
-        const Timu = iframeWindow.document.querySelectorAll(".TiMu");
-        if (!Timu)
-          return void resolve();
-        let ques = [], succ = 0;
-        for (let i = 0; i < Timu.length; i++) {
-          let data = getQuestion("1", Timu[i]);
-          console.log(data), ques.push(data);
-        }
-        this.askStore.reset(), this.askStore.count = ques.length, this.askStore.task.name = "章节测验";
-        for (let i = 0; i < ques.length; i++) {
-          await randomSleep(this.defaultConfig.answerIntervalMin, this.defaultConfig.answerIntervalMax), this.askStore.insert(ques[i]), this.askStore.task.work.inx = i;
-          let data = await getAnswers(ques[i], iframeWindow);
-          this.askStore.get(i).allAnswer = data;
-          let tmp = fillAnswer(data, ques[i], Timu[i], iframeWindow);
-          tmp ? (this.askStore.get(i).status = "primary", this.askStore.get(i).answer = tmp, succ++) : (this.askStore.get(i).status = "danger", this.askStore.get(i).answer = "暂无答案"), this.askStore.get(i).dom = Timu[i];
-        }
-        this.defaultConfig.autoSubmit ? (succ / ques.length < this.defaultConfig.minAccuracy ? (this.askStore.log("章节测验正确率不足，暂存", "error"), iframeWindow.alert = function(e) {
-          console.log("alert 方法被阻止", e);
-        }, iframeWindow.noSubmit()) : (await randomSleep(this.defaultConfig.submitDelayMin, this.defaultConfig.submitDelayMax), iframeWindow.btnBlueSubmit(), await sleep(3), iframeWindow.submitCheckTimes(), this.askStore.log("章节测验已完成", "success"), await randomSleep(5, 10), this.askStore.log("正在刷新页面...", "info"), iframeWindow.location.reload()), this.askStore.task.status = `章节测验已完成，等待切换,正确率:${succ}/${ques.length}`, resolve()) : (this.askStore.log("已完成答题，未开启自动提交，等待手动提交中", "success"), this.askStore.task.status = `正在等待手动提交,正确率:${succ}/${ques.length}`);
+        };
+        const timer = setInterval(() => {
+          if (!isCurrent()) return finish(false);
+          // A missing or false isUnFinishJob() is not proof of completion.
+          if (player.ended()) onEnded();
+          else if (player.paused()) resumePlayback();
+        }, 1000);
+        player.on("ended", onEnded);
+        resumePlayback();
       });
+    }
+    async work(iframeWindow, isCurrent = () => true) {
+      decode(iframeWindow);
+      const Timu = iframeWindow.document.querySelectorAll(".TiMu");
+      if (!Timu.length || !isCurrent()) {
+        this.askStore.log("测验尚未加载或页面已切换，停止自动切换", "error");
+        return false;
+      }
+      const ques = Array.from(Timu, (item) => getQuestion("1", item));
+      let succ = 0;
+      this.askStore.reset();
+      this.askStore.count = ques.length;
+      this.askStore.task.name = "章节测验";
+      for (let i = 0; i < ques.length; i++) {
+        await randomSleep(this.defaultConfig.answerIntervalMin, this.defaultConfig.answerIntervalMax);
+        if (!isCurrent()) return false;
+        this.askStore.insert(ques[i]);
+        this.askStore.task.work.inx = i;
+        const data = await getAnswers(ques[i], iframeWindow);
+        if (!isCurrent()) return false;
+        this.askStore.get(i).allAnswer = data;
+        const answer = fillAnswer(data, ques[i], Timu[i], iframeWindow);
+        this.askStore.get(i).status = answer ? "primary" : "danger";
+        this.askStore.get(i).answer = answer || "暂无答案";
+        this.askStore.get(i).dom = Timu[i];
+        if (answer) succ++;
+      }
+      if (!this.defaultConfig.autoSubmit) {
+        this.askStore.msg(`等待手动提交，已填写:${succ}/${ques.length}`);
+        return false;
+      }
+      const minAccuracy = Number(this.defaultConfig.minAccuracy);
+      if (!Number.isFinite(minAccuracy) || minAccuracy < 0 || minAccuracy > 1 || succ / ques.length < minAccuracy) {
+        this.askStore.log("答案覆盖率不足或最低正确率配置无效，暂存后停止自动切换", "error");
+        if (typeof iframeWindow.noSubmit === "function") iframeWindow.noSubmit();
+        return false;
+      }
+      await randomSleep(this.defaultConfig.submitDelayMin, this.defaultConfig.submitDelayMax);
+      if (!isCurrent()) return false;
+      if (typeof iframeWindow.btnBlueSubmit !== "function" || typeof iframeWindow.submitCheckTimes !== "function") {
+        this.askStore.log("未找到测验提交函数，请手动提交", "error");
+        return false;
+      }
+      iframeWindow.btnBlueSubmit();
+      await sleep(3);
+      if (!isCurrent()) return false;
+      iframeWindow.submitCheckTimes();
+      this.askStore.msg("已发送提交请求，等待页面确认任务完成");
+      return true;
     }
     homework() {
       return new Promise(async (resolve) => {
@@ -2005,7 +2043,203 @@
       await this.ServerApi.s(questionList, iframeWindow.location.href);
     }
   }
+  function inspectCourseList(courseDocument) {
+    return Array.from(courseDocument.querySelectorAll('#courseList .learnCourse')).map(card => {
+      const name = card.querySelector('.course-name')?.textContent.trim() || card.id;
+      const link = card.querySelector('.course-info a[href*="/visit/stucoursemiddle"]');
+      const progress = card.querySelector('.btm-cover .l-txt')?.textContent.match(/(\d+)\s*\/\s*(\d+)/);
+      const blocked = !!card.querySelector('.not-open-tip') || card.getAttribute('aria-disabled') === 'true';
+      const finished = progress ? Number(progress[1]) : null;
+      const total = progress ? Number(progress[2]) : null;
+      return { card, name, link, finished, total, blocked,
+        unfinished: !blocked && !!link && total > 0 && finished >= 0 && finished < total };
+    });
+  }
+  function startCourseListNavigation(pageWindow, getSettings, notify) {
+    let attempts = 0;
+    const reported = new Map(), requested = new Set();
+    notify("课程检索：等待课程列表及任务进度加载", "info");
+    const timer = setInterval(() => {
+      try {
+        if (!getSettings().autoJump) {
+          clearInterval(timer);
+          notify("课程检索：自动切换已关闭", "info");
+          return;
+        }
+        const doc = pageWindow.document;
+        if (doc.documentElement.dataset.autoCourseEntering === "true") {
+          clearInterval(timer);
+          return;
+        }
+        const courses = inspectCourseList(doc);
+        for (const course of courses) {
+          const status = course.blocked ? "不可进入，跳过" : course.total === null ? "进度未加载，等待" :
+            `${course.finished}/${course.total}，${course.unfinished ? "未完成" : "已完成或无任务点"}`;
+          if (reported.get(course.card) !== status) {
+            reported.set(course.card, status);
+            notify(`课程检索：${course.name} | ${status}`, "info");
+          }
+        }
+        const missing = courses.filter(course => !course.blocked && course.total === null);
+        // The platform loads progress lazily; reuse its native batch loader for off-screen cards.
+        const roles = missing.map(course => course.card.getAttribute('roleid')).filter(role => role && !requested.has(role));
+        if (roles.length && typeof pageWindow.batchLoadJobInfo === "function") {
+          roles.forEach(role => requested.add(role));
+          pageWindow.batchLoadJobInfo(roles);
+          notify(`课程检索：请求加载 ${roles.length} 门课程的任务进度`, "info");
+        }
+        const selected = courses.find(course => course.unfinished);
+        if (selected) {
+          const url = new URL(selected.link.href, pageWindow.location.href);
+          if (!/^https?:$/.test(url.protocol) || !/(^|\.)chaoxing\.com$/.test(url.hostname) || url.pathname !== '/visit/stucoursemiddle') {
+            throw new Error("课程入口地址不符合预期");
+          }
+          if (!selected.card.isConnected) return;
+          doc.documentElement.dataset.autoCourseEntering = "true";
+          clearInterval(timer);
+          notify(`课程检索：进入 ${selected.name}，进度 ${selected.finished}/${selected.total}`, "success");
+          // Cross-origin course frames cannot navigate an unactivated top-level page.
+          // Let the personal-space page validate the request and navigate itself.
+          if (pageWindow.top !== pageWindow) {
+            pageWindow.top.postMessage({ type: 'chaoxing-toolkit-enter-course', url: url.href }, 'https://i.chaoxing.com');
+          } else pageWindow.location.href = url.href;
+          return;
+        }
+        if (courses.length && !missing.length) {
+          clearInterval(timer);
+          notify("课程检索：没有可进入的未完成课程", "info");
+        } else if (++attempts >= 60) {
+          clearInterval(timer);
+          notify("课程检索：列表或任务进度加载超时，请检查页面", "warning");
+        }
+      } catch (error) {
+        clearInterval(timer);
+        delete pageWindow.document.documentElement.dataset.autoCourseEntering;
+        console.error("课程检索失败", error);
+        notify("课程检索：无法读取进度或进入课程，请手动检查", "error");
+      }
+    }, 1000);
+  }
+  function startPersonalSpaceNavigation(pageWindow, getSettings, notify) {
+    pageWindow.addEventListener('message', event => {
+      if (!getSettings().autoJump || event.data?.type !== 'chaoxing-toolkit-enter-course') return;
+      const courseFrame = pageWindow.document.querySelector('#frame_content');
+      if (!courseFrame || event.source !== courseFrame.contentWindow) return;
+      try {
+        const origin = new URL(event.origin);
+        const frameUrl = new URL(courseFrame.src, pageWindow.location.href);
+        const target = new URL(event.data.url);
+        if (origin.origin !== frameUrl.origin || origin.protocol !== 'https:' ||
+            !/(^|\.)chaoxing\.com$/.test(origin.hostname) || target.protocol !== 'https:' ||
+            !/(^|\.)chaoxing\.com$/.test(target.hostname) || target.pathname !== '/visit/stucoursemiddle') return;
+        notify('个人空间：收到课程选择，进入课程详情', 'success');
+        pageWindow.location.href = target.href;
+      } catch (error) {
+        notify('个人空间：课程入口地址校验失败，请手动检查', 'warning');
+      }
+    });
+    let attempts = 0;
+    const timer = setInterval(() => {
+      if (!getSettings().autoJump) {
+        clearInterval(timer);
+        notify("个人空间：自动切换已关闭", "info");
+        return;
+      }
+      const menu = pageWindow.document.querySelector('.label-item[name="课程"][dataurl*="/visit/interaction"]');
+      if (menu) {
+        clearInterval(timer);
+        notify("个人空间：打开课程列表，等待课程子页面自动检索", "info");
+        if (!menu.classList.contains('active')) menu.click();
+      } else if (++attempts >= 60) {
+        clearInterval(timer);
+        notify("个人空间：未找到课程菜单，请手动打开课程列表", "warning");
+      }
+    }, 1000);
+  }
+  function findUnfinishedChapter(directoryDocument) {
+    const chapters = directoryDocument.querySelectorAll('.chapter_item[id^="cur"][onclick]');
+    for (const chapter of chapters) {
+      if (!/^\s*toOld\s*\(/.test(chapter.getAttribute("onclick") || "")) continue;
+      if (chapter.getAttribute("aria-disabled") === "true" || chapter.hasAttribute("disabled")) continue;
+      const status = chapter.querySelector(".catalog_task");
+      if (!status || status.querySelector(".icon_yiwanc")) continue;
+      // These platform icons indicate restricted or scheduled access.
+      if (status.querySelector(".icon-bukaifang, .icon-dingshi, .icon-chuangguan")) continue;
+      const unfinished = status.querySelector(".catalog_points_yi");
+      if (unfinished && /^\d+$/.test(unfinished.textContent.trim()) && Number(unfinished.textContent.trim()) > 0) {
+        return chapter;
+      }
+    }
+    return null;
+  }
+  function startDirectoryNavigation(pageWindow, getSettings, notify) {
+    let attempts = 0;
+    let chapterMenuClicked = false;
+    notify("目录自动进入已启动，正在查找黄色未完成章节", "info");
+    const timer = setInterval(() => {
+      try {
+        if (!getSettings().autoJump) {
+          clearInterval(timer);
+          notify("自动切换已关闭，请手动进入章节", "info");
+          return;
+        }
+        const chapterMenu = pageWindow.document.querySelector('.stuNavigationList li[dataname="zj"]');
+        if (chapterMenu && chapterMenu.getAttribute?.('dataname') === 'zj' && !chapterMenuClicked) {
+          chapterMenuClicked = true;
+          if (!chapterMenu.classList.contains('curNav')) {
+            notify("课程界面：点击章节菜单，等待目录加载", "info");
+            chapterMenu.click();
+            return;
+          }
+          notify("课程界面：已在章节菜单，开始检索未完成章节", "info");
+        }
+        const directoryFrame = pageWindow.document.querySelector("#frame_content-zj");
+        const directoryDocument = directoryFrame ? directoryFrame.contentDocument : pageWindow.document;
+        if (!directoryDocument ||
+            !directoryDocument.querySelector('.chapter_item[id^="cur"][onclick]')) {
+          if (++attempts >= 60) {
+            clearInterval(timer);
+            notify("章节目录尚未加载，请刷新页面或手动进入章节", "warning");
+          }
+          return;
+        }
+        if (directoryDocument.documentElement.dataset.autoChapterEntering === "true") {
+          clearInterval(timer);
+          return;
+        }
+        const chapter = findUnfinishedChapter(directoryDocument);
+        clearInterval(timer);
+        if (!chapter) {
+          notify("当前目录没有可自动进入的未完成章节，请检查完成状态或访问限制", "info");
+          return;
+        }
+        if ((directoryFrame && (!directoryFrame.isConnected || directoryFrame.contentDocument !== directoryDocument)) || !chapter.isConnected) return;
+        directoryDocument.documentElement.dataset.autoChapterEntering = "true";
+        notify(`正在进入未完成章节：${chapter.getAttribute("title") || chapter.id}`, "success");
+        // Use the live page handler and its current authentication/transfer parameters.
+        const directoryWindow = directoryFrame ? directoryFrame.contentWindow : pageWindow;
+        const args = (chapter.getAttribute("onclick") || "").match(/^\s*toOld\s*\(\s*['"](\d+)['"]\s*,\s*['"](\d+)['"]\s*,\s*['"](\d+)['"]\s*,\s*(\d+)\s*\)\s*;?\s*$/);
+        try {
+          if (args && typeof directoryWindow.toOld === "function") {
+            directoryWindow.toOld(args[1], args[2], args[3], Number(args[4]));
+          } else chapter.click();
+        } catch (error) {
+          delete directoryDocument.documentElement.dataset.autoChapterEntering;
+          throw error;
+        }
+      } catch (error) {
+        clearInterval(timer);
+        console.error("自动进入章节失败", error);
+        notify("无法读取或打开章节目录，请手动进入章节", "error");
+      }
+    }, 1000);
+  }
   const pinia = pinia$1.createPinia(), app = vue.createApp(App).use(ElementPlus).use(pinia), _self = _unsafeWindow, top = _self.top, formStore = useformStore();
+  const notifyNavigation = (message, type = "info") => {
+    console.log(`[自动导航] ${message}`);
+    useAskStore().log(message, type);
+    useAskStore().msg(message);
+  };
   var iframeCom = null;
   switch (app.mount((() => {
     try {
@@ -2019,6 +2253,14 @@
     const style = document.createElement("style");
     style.innerHTML = "\n       * {\n           -webkit-user-select: auto !important;\n           -moz-user-select: auto !important;\n           -o-user-select: auto !important;\n           user-select: auto !important;\n       }\n   ", document.head.appendChild(style);
   })(), _self.location.pathname) {
+    case "/base":
+      startPersonalSpaceNavigation(_self, () => formStore.forminput, notifyNavigation);
+      break;
+    case "/visit/interaction":
+    case "/mooc2-ans/visit/interaction":
+    case "/mooc-ans/visit/interaction":
+      startCourseListNavigation(_self, () => formStore.forminput, notifyNavigation);
+      break;
     case "/work/doHomeWorkNew":
     case "/mooc-ans/work/doHomeWorkNew":
     case "/mooc2-ans/work/doHomeWorkNew":
@@ -2033,62 +2275,121 @@
       }
       const cxModel = new Cx();
       cxModel.askStore.log("脚本初始化成功！", "success");
-      const startWork = async () => {
-        var _a, _b, _c, _d, _e;
-        await waitElementLoaded(_self, "#iframe");
-        const cardsIframe = _self.document.querySelector("#iframe");
-        await waitIframeLoaded(cardsIframe);
-        const _self1 = cardsIframe.contentWindow;
-        top.scroll2Job();
-        let jobList = _self1.document.querySelectorAll(".ans-job-icon") || [];
-        for (let i = 0; i < jobList.length; i++) {
-          const item = jobList[i];
-          if ((_a = item.parentElement) == null ? void 0 : _a.classList.contains("ans-job-finished")) {
-            const iframe = (_b = item.parentElement) == null ? void 0 : _b.querySelector("iframe");
-            if (iframe == null ? void 0 : iframe.src.match(/\/ananas\/modules\/work\/index.html/)) {
-              await waitIframeLoaded(iframe), JSON.parse(iframe.getAttribute("data"));
-              const workIframe = (_c = iframe.contentWindow) == null ? void 0 : _c.document.querySelector("iframe");
-              workIframe && (await waitIframeLoaded(workIframe), cxModel.s(workIframe.contentWindow));
-            }
-            console.log(iframe.src, "已完成"), cxModel.askStore.log("已完成的任务点,跳过");
-          } else {
-            const iframe = (_d = item.parentElement) == null ? void 0 : _d.querySelector("iframe");
-            await waitIframeLoaded(iframe);
-            const otherInfo = JSON.parse(iframe.getAttribute("data"));
-            if (cxModel.askStore.log(`正在完成任务:${otherInfo.name || otherInfo.title}`), iframe == null ? void 0 : iframe.src.match(/\/ananas\/modules\/video\/index\.html/)) {
-              if (!formStore.forminput.autoVideo) {
-                cxModel.askStore.log("视频任务已跳过", "success");
-                continue;
-              }
-              await cxModel.video(iframe.contentWindow), cxModel.askStore.log("视频任务已完成", "success");
-            } else if (iframe == null ? void 0 : iframe.src.match(/\/ananas\/modules\/work\/index.html/)) {
-              cxModel.askStore.log("即将开始做作业", "info");
-              const workIframe = (_e = iframe.contentWindow) == null ? void 0 : _e.document.querySelector("iframe");
-              workIframe && (await waitIframeLoaded(workIframe), await cxModel.work(workIframe.contentWindow), cxModel.askStore.log("作业任务已完成", "success"));
-            } else if (iframe == null ? void 0 : iframe.src.match(/\/ananas\/modules\/audio\/index.html/)) {
-              if (log("音频", "error"), !formStore.forminput.autoVideo) {
-                cxModel.askStore.log("音频任务已跳过", "success");
-                continue;
-              }
-              iframe && (await waitIframeLoaded(iframe), await cxModel.audio(iframe.contentWindow), cxModel.askStore.log("音频任务已完成", "success"));
-            } else
-              (iframe == null ? void 0 : iframe.src.match(/\/ananas\/modules\/pdf\/index.html/)) ? (log("文档", "error"), iframe && (await waitIframeLoaded(iframe), await cxModel.pdf(iframe.contentWindow), cxModel.askStore.log("pdf任务已完成", "success"))) : (console.log(iframe == null ? void 0 : iframe.src, "未知"), cxModel.askStore.log("未知任务跳过", "success"));
+      let chapterDocument = null;
+      const startWork = async (cardsIframe, cardsDocument, chapterUrl) => {
+        const isCurrent = () => {
+          try {
+            return cardsIframe.isConnected && cardsIframe === _self.document.querySelector("#iframe") &&
+              cardsIframe.contentDocument === cardsDocument && cardsIframe.contentWindow.location.href === chapterUrl;
+          } catch { return false; }
+        };
+        const jobFinished = (item) => item.isConnected && item.parentElement?.classList.contains("ans-job-finished") === true;
+        const waitForConfirmation = async (item) => {
+          for (let attempt = 0; attempt < 120; attempt++) {
+            if (!isCurrent()) return false;
+            if (jobFinished(item)) return true;
+            await sleep(1);
           }
+          cxModel.askStore.log("页面尚未确认任务完成，停止自动切换，请检查或刷新章节", "error");
+          return false;
+        };
+        if (!isCurrent()) return;
+        if (typeof top.scroll2Job === "function") top.scroll2Job();
+        const jobList = Array.from(cardsDocument.querySelectorAll(".ans-job-icon"));
+        if (!jobList.length) {
+          cxModel.askStore.msg("尚未发现任务点，停止自动切换，请检查章节是否加载完成");
+          return;
         }
-        await sleep(formStore.forminput.interval), !formStore.forminput.autoJump && cxModel.askStore.msg("由于未开启自动切换,请手动切换"), formStore.forminput.autoJump && (top == null ? void 0 : top.document.querySelector(".nextChapter").click());
+        for (const item of jobList) {
+          if (!isCurrent()) return;
+          if (jobFinished(item)) continue;
+          const iframe = item.parentElement?.querySelector("iframe");
+          if (!iframe) {
+            cxModel.askStore.log("任务 iframe 尚未加载，停止自动切换", "error");
+            return;
+          }
+          await waitIframeLoaded(iframe);
+          if (!isCurrent()) return;
+          let completed = true;
+          if (/\/ananas\/modules\/video\/index\.html/.test(iframe.src)) {
+            if (!formStore.forminput.autoVideo) {
+              cxModel.askStore.msg("自动视频已关闭，未完成任务保留在当前章节");
+              return;
+            }
+            completed = await cxModel.video(iframe.contentWindow, isCurrent);
+          } else if (/\/ananas\/modules\/work\/index\.html/.test(iframe.src)) {
+            if (!formStore.forminput.autoAnswer) {
+              cxModel.askStore.msg("自动答题已关闭，请手动完成测验");
+              return;
+            }
+            const workIframe = iframe.contentWindow.document.querySelector("iframe");
+            if (!workIframe) {
+              cxModel.askStore.log("测验 iframe 尚未加载，停止自动切换", "error");
+              return;
+            }
+            await waitIframeLoaded(workIframe);
+            if (!isCurrent()) return;
+            completed = await cxModel.work(workIframe.contentWindow, isCurrent);
+          } else if (/\/ananas\/modules\/audio\/index\.html/.test(iframe.src)) {
+            if (!formStore.forminput.autoVideo) return;
+            await cxModel.audio(iframe.contentWindow);
+          } else if (/\/ananas\/modules\/pdf\/index\.html/.test(iframe.src)) {
+            await cxModel.pdf(iframe.contentWindow);
+          } else {
+            cxModel.askStore.log("未识别的任务类型，停止自动切换，请手动完成", "error");
+            return;
+          }
+          if (!completed || !isCurrent() || !await waitForConfirmation(item)) return;
+          cxModel.askStore.log("页面已确认任务点完成", "success");
+        }
+        await sleep(formStore.forminput.interval);
+        if (!isCurrent()) return;
+        const currentJobs = Array.from(cardsDocument.querySelectorAll(".ans-job-icon"));
+        if (!currentJobs.length || !currentJobs.every(jobFinished)) {
+          cxModel.askStore.msg("本章节仍有未完成任务，停止自动切换");
+          return;
+        }
+        if (!formStore.forminput.autoJump) {
+          cxModel.askStore.msg("未开启自动切换，请手动切换");
+          return;
+        }
+        const nextChapter = top.document.querySelector(".nextChapter");
+        if (nextChapter && !nextChapter.disabled && nextChapter.getAttribute("aria-disabled") !== "true") nextChapter.click();
+        else cxModel.askStore.msg("没有可切换的下一章节");
       };
+      let checkingChapter = false;
       setInterval(async () => {
-        await waitElementLoaded(_self, "#iframe");
-        const cardsIframe = _self.document.querySelector("#iframe");
-        await waitIframeLoaded(cardsIframe);
-        const _self1 = cardsIframe.contentWindow;
-        iframeCom != _self1.location.href && (iframeCom = _self1.location.href, cxModel.askStore.reset(), startWork());
+        if (checkingChapter) return;
+        checkingChapter = true;
+        try {
+          const cardsIframe = _self.document.querySelector("#iframe");
+          if (!cardsIframe || !cardsIframe.contentDocument || cardsIframe.contentDocument.readyState !== "complete") return;
+          const cardsDocument = cardsIframe.contentDocument;
+          const chapterUrl = cardsIframe.contentWindow.location.href;
+          if (chapterUrl === "about:blank" || !cardsDocument.querySelector(".ans-job-icon")) return;
+          if (iframeCom !== chapterUrl || chapterDocument !== cardsDocument) {
+            iframeCom = chapterUrl;
+            chapterDocument = cardsDocument;
+            cxModel.askStore.reset();
+            startWork(cardsIframe, cardsDocument, chapterUrl).catch((error) => {
+              console.error("章节任务执行失败", error);
+              cxModel.askStore.log("任务执行失败，已停止自动切换，请检查当前章节", "error");
+            });
+          }
+        } catch (error) {
+          console.error("章节状态检查失败", error);
+        } finally {
+          checkingChapter = false;
+        }
       }, 2e3);
       break;
     case "/mooc2-ans/mycourse/stu":
     case "/mooc-ans/mycourse/stu":
     case "/mycourse/stu":
-      ElementPlus.ElNotification({ title: "Auto Ask", message: "此页面无任务，请自行进入章节页面", type: "error" });
+    case "/mooc2-ans/mycourse/studentcourse":
+    case "/mooc-ans/mycourse/studentcourse":
+    case "/mycourse/studentcourse":
+      startDirectoryNavigation(_self, () => formStore.forminput, notifyNavigation);
       break;
     case "/work/selectWorkQuestionYiPiYue":
     case "/knowledge/cards":
